@@ -26,3 +26,20 @@ terraform.rc
 .idea/
 .vscode/
 .DS_Store
+
+# Credentials and keys: never commit
+*.pem
+*.key
+*.p12
+*.pfx
+id_rsa*
+id_ed25519*
+.aws/
+credentials
+kubeconfig*
+*.kubeconfig
+
+# Variable files can hold secrets; commit only *.tfvars.example
+*.tfvars
+*.tfvars.json
+!*.tfvars.example
