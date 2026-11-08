@@ -5,12 +5,22 @@ output "vpc_id" {
 
 output "public_subnet_ids" {
   description = "List of IDs corresponding to the public subnets."
-  value       = toset(aws_subnet.public[*].id)
+  value       = aws_subnet.public[*].id
 }
 
 output "private_subnet_ids" {
   description = "List of IDs corresponding to the private subnets."
-  value       = toset(aws_subnet.private[*].id)
+  value       = aws_subnet.private[*].id
+}
+
+output "nat_gateway_ids" {
+  description = "List of IDs of the NAT gateways, one per availability zone."
+  value       = aws_nat_gateway.nat_gw[*].id
+}
+
+output "private_route_table_ids" {
+  description = "List of IDs of the private route tables, one per availability zone."
+  value       = aws_route_table.private_rt[*].id
 }
 
 output "internet_gateway_id" {
