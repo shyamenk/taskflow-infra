@@ -1,0 +1,28 @@
+# Terraform local working files
+.terraform/
+*.tfstate
+*.tfstate.*
+crash.log
+crash.*.log
+.terraform.tfstate.lock.info
+
+# Plan output and variable files that may hold secrets
+*.tfplan
+tfplan
+*.auto.tfvars
+secrets.tfvars
+
+# Overrides are local-only
+override.tf
+override.tf.json
+*_override.tf
+*_override.tf.json
+
+# CLI config
+.terraformrc
+terraform.rc
+
+# Editor and OS
+.idea/
+.vscode/
+.DS_Store
