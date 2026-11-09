@@ -10,6 +10,13 @@ Part of a three-repo GitOps pipeline:
 
 Naming: every resource is prefixed `taskflow-dev` and tagged `Project=taskflow`, `Environment=dev`, `ManagedBy=terraform`.
 
+## Docs
+
+- [`docs/ASSIGNMENTS.md`](docs/ASSIGNMENTS.md): the step-by-step plan (A0 to A16).
+- [`docs/progress/BACKLOG.md`](docs/progress/BACKLOG.md): what is done and what is next.
+- [`docs/content/REFERENCE.md`](docs/content/REFERENCE.md): official docs to open, required arguments, version gotchas, mistakes and troubleshooting for each step.
+- [`docs/content/NOTES.md`](docs/content/NOTES.md): raw notes and errors seen while building.
+
 ## Configuration
 
 Copy `terraform.tfvars.example` to `terraform.tfvars` (git-ignored) and set:
