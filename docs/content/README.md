@@ -22,7 +22,7 @@ Raw material for the LinkedIn series about this project (one post, or one short 
 | Kubernetes / EKS version | 1.37 (node AMI `amazon-eks-node-al2023-x86_64-standard-1.37-v20261031`) | https://docs.aws.amazon.com/eks/latest/userguide/kubernetes-versions.html |
 | Node (image build stage) | 24.15 (`node:24.15-alpine3.23`) | https://nodejs.org/docs/latest/api/ |
 | nginx runtime image | `nginx/nginx-unprivileged:1.31.7-alpine3.24` | https://hub.docker.com/r/nginxinc/nginx-unprivileged , https://nginx.org/en/docs/ |
-| CI | GitHub Actions (decided 2026-11-09) | https://docs.github.com/en/actions |
+| CI and registry | GitHub Actions and GHCR (decided 2026-11-09) | https://docs.github.com/en/actions |
 | ArgoCD | decided in A13 | https://argo-cd.readthedocs.io/en/stable/ |
 
 ## Per-step template (copy into `NOTES.md` for each assignment)

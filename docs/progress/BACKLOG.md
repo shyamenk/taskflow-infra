@@ -1,7 +1,7 @@
 # Taskflow backlog
 
 Details for each item are in `../ASSIGNMENTS.md`.
-Last updated: 2026-11-09. Next task: A10 (GitHub Actions chosen; registry still to pick).
+Last updated: 2026-11-09. Next task: A10 (GitHub Actions + GHCR; deferred, not started).
 
 ## Phase 0: Setup
 - [x] A0 Tools, AWS access, cost guard (budget alert skipped on purpose; teardown in A15 is the cost control)
@@ -18,7 +18,7 @@ Last updated: 2026-11-09. Next task: A10 (GitHub Actions chosen; registry still 
 
 ## Phase 2: Application and CI (taskflow-app)
 - [x] A9 Container image (own Vite app: PR #2; image: PR #4, both in taskflow-app)
-- [ ] A10 GitHub Actions build and push
+- [ ] A10 GitHub Actions build and push to GHCR (issue #7 and branch `ci/7-ghcr-workflow` exist in taskflow-app; the workflow file is not written yet)
 
 ## Phase 3: GitOps (taskflow-gitops)
 - [ ] A11 Manifests
@@ -35,7 +35,7 @@ Last updated: 2026-11-09. Next task: A10 (GitHub Actions chosen; registry still 
 - kubectl uses the default `~/.kube/config`, context `taskflow-dev`. Terminals opened before the `.zshrc` KUBECONFIG export was removed need `unset KUBECONFIG`.
 - `terraform.tfvars` (git-ignored) holds `admin_cidrs` = your home IP. If kubectl times out, your IP probably changed: update it and apply.
 - Deferred to the refactor (trivy findings): AWS-0039 KMS secrets encryption (high), AWS-0038 control plane logging, AWS-0178 VPC flow logs. AWS-0040 and AWS-0041 are accepted and documented in `eks.tf`.
-- Decided 2026-11-09: GitHub Actions for CI (no CircleCI). Open for A10: which registry (GHCR, Docker Hub or ECR). A new GHCR package is private by default, so make it public or add an image pull secret. `GITHUB_TOKEN` cannot push to `taskflow-gitops`; A12 needs a fine-grained token stored as a secret.
+- Decided 2026-11-09: GitHub Actions for CI (no CircleCI). Registry decided 2026-11-09: GHCR (`ghcr.io/shyamenk/taskflow-app`, tagged with the short commit SHA). A new GHCR package is private by default, so make it public after the first publish or add an image pull secret. `GITHUB_TOKEN` cannot push to `taskflow-gitops`; A12 needs a fine-grained token stored as a secret.
 - Docs source of truth is `taskflow-infra/docs/` (in git). The older copy in `~/projects/taskflow/docs/` is stale and can be deleted.
 - Before A13/A15: ArgoCD's LoadBalancer Service creates an ELB outside Terraform. Delete the Service (or the ArgoCD app) before `terraform destroy`.
 - Optional cleanups: node group could use Spot capacity for dev; rename `nodes_assume` to `node_assume` in `iam.tf`; leftover `# Hooli-Box cluster config` comment at `~/.zshrc:278`.
