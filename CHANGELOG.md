@@ -3,6 +3,7 @@
 ## [Unreleased]
 
 ### Added
+- `docs/` folder with the assignments, backlog, build notes and a reference of official docs, required arguments, gotchas and troubleshooting.
 - EKS managed node group `taskflow-dev-nodes` (2 x `t3.small`, AL2023 x86) in the private subnets.
 - Validated `instance_type`, `ami_type`, `min_size`, `desired_size` and `max_size` variables.
 - EKS control plane `taskflow-dev-eks` (Kubernetes 1.37) in the private subnets, using access entries for authentication, with the Terraform caller granted cluster admin.
