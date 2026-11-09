@@ -7,7 +7,8 @@ This repo is public. Anything committed is visible to everyone, and git history 
 - Passwords, API keys, access tokens, private keys, certificates
 - AWS credentials or anything from `~/.aws/`
 - `.env` files, `*.tfvars` files, kubeconfig files, Terraform state files
-- Account IDs, internal hostnames, or personal data that are not already public
+- Internal hostnames or personal data that are not already public
+- Account IDs, with one accepted exception: the state bucket name `taskflow-tfstate-<account-id>-use1` contains it, because S3 bucket names are global and cannot be renamed. AWS does not treat account IDs as secrets, and access is controlled by IAM, not by hiding the ID
 
 ## Do instead
 
