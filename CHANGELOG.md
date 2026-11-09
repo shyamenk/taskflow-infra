@@ -3,6 +3,7 @@
 ## [Unreleased]
 
 ### Added
+- Docs record GHCR as the container registry and A10 as deferred.
 - Docs refresh after A9: A9 notes and reference, GitHub Actions replaces CircleCI in the plan, stale billing note removed.
 - `docs/` folder with the assignments, backlog, build notes and a reference of official docs, required arguments, gotchas and troubleshooting.
 - EKS managed node group `taskflow-dev-nodes` (2 x `t3.small`, AL2023 x86) in the private subnets.
