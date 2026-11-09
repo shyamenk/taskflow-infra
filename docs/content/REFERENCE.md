@@ -164,6 +164,21 @@ How to use this file: open the section for the step you are on, open the linked 
 
 ---
 
+## A9: Container image
+- **Docs to open:** Dockerfile reference https://docs.docker.com/reference/dockerfile/ , multi-stage builds https://docs.docker.com/build/building/multi-stage/ , build cache https://docs.docker.com/build/cache/optimize/ , nginx headers module https://nginx.org/en/docs/http/ngx_http_headers_module.html , the runtime image https://hub.docker.com/r/nginxinc/nginx-unprivileged
+- **Must be there:**
+  - Dockerfile: a `FROM` for every stage (`FROM ... AS name` for stages you copy from), `COPY --from=<stage>` to take files across, a pinned tag on each base image, and `npm ci` (not `npm install`) in the build stage.
+  - `.dockerignore`: at least `node_modules`, `dist`, `.git`, `.env*`, logs.
+  - nginx: a `server` with `listen 8080` for the unprivileged image, a `root`, and `try_files $uri $uri/ /index.html` for a single-page app.
+- **Version gotchas:**
+  - Parser directives such as `# syntax=docker/dockerfile:1` must be at the very top. After a blank line, a comment or an instruction they are treated as comments (checked 2026-11-09).
+  - `add_header` is inherited into a `location` only if that location defines no `add_header` of its own. nginx 1.29.3 and later has `add_header_inherit` to change this (stated on the nginx page, checked 2026-11-09); we used a shared include so it works on older nginx too.
+  - `expires` adds or modifies `Cache-Control` for success responses; do not combine it with an `add_header Cache-Control`.
+  - The unprivileged nginx image runs as uid 101 and listens on 8080, not 80.
+- **Mistakes (all seen):** headers missing on assets, duplicate `Cache-Control`, ignored `# syntax=` line, `-p 8080:80` from the assignment, a README Node version guessed from memory.
+- **Troubleshooting:** `curl -sI <url> | grep -i <header>` per path (page, hashed asset, unknown route); `docker exec <c> nginx -t`; `docker exec <c> id`; `docker images <name>` for size; `docker history <name>` to see which layer is big. Run the real build, then run it against a deliberately broken copy to prove your test can fail.
+- **Required to ship:** each acceptance criterion has a check; `npm run test:image` in `taskflow-app` runs all seven.
+
 ## Cross-cutting: plan, apply, and security checks
 - **Docs:** https://developer.hashicorp.com/terraform/cli/commands/plan and https://aquasecurity.github.io/trivy/latest/docs/scanner/misconfiguration/
 - **Read a plan in this order:** the last `Plan:` line; symbols (`+` create, `~` change, `-` destroy, `-/+` replace; search for `must be replaced`); literal values (names, CIDRs, instance types, versions); IAM principals and wildcards. Skip `(known after apply)` and repeated `tags_all`.
@@ -174,4 +189,4 @@ How to use this file: open the section for the step you are on, open the linked 
 - **Inspect state:** `terraform state list`, `terraform state show <address>`.
 
 ## Sections still to fill in
-A9 Docker, A10 CI, A11 manifests, A12 CI updates manifests, A13 ArgoCD, A14 GitOps loop, A15 teardown, A16 write-up. Use the same shape: docs to open, must be there, required arguments, version gotchas, mistakes, troubleshooting.
+A10 CI (GitHub Actions: workflow syntax https://docs.github.com/en/actions/reference/workflows-and-actions/workflow-syntax ; `GITHUB_TOKEN` is limited to the repository that holds the workflow, https://docs.github.com/en/actions/concepts/security/github_token ; a new GHCR package is private by default, https://docs.github.com/en/packages/working-with-a-github-packages-registry/working-with-the-container-registry ; all checked 2026-11-09), A11 manifests, A12 CI updates manifests, A13 ArgoCD, A14 GitOps loop, A15 teardown, A16 write-up. Use the same shape: docs to open, must be there, required arguments, version gotchas, mistakes, troubleshooting.

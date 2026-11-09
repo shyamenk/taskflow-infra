@@ -12,7 +12,7 @@ This repo is public. Anything committed is visible to everyone, and git history 
 
 ## Do instead
 
-- Keep secrets in the CI provider's secret store (CircleCI project environment variables) or in AWS Secrets Manager.
+- Keep secrets in the CI provider's secret store (GitHub Actions secrets) or in AWS Secrets Manager.
 - Commit a `.example` file with placeholder values (for example `terraform.tfvars.example`).
 - Give every token the minimum scope and expiry, limited to one repository.
 - Stage files by name; avoid `git add .`.

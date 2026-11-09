@@ -134,5 +134,22 @@ Seeded from what actually happened in A0 to A5. Entries marked `[verify]` need a
 
 ---
 
-## A9 onward (fill in as you go)
-A9 Docker / A10 CI / A11 manifests / A12 CI updates manifests / A13 ArgoCD / A14 GitOps loop / A15 teardown / A16 write-up. Copy the template from `README.md` for each.
+## A9: Container image
+- **What we built:** a small own React + Vite to-do app (taskflow-app PR #2) and a multi-stage image (PR #4): build stage `node:24.15-alpine3.23`, runtime `nginx/nginx-unprivileged:1.31.7-alpine3.24` on port 8080. Result: 92.5 MB, runs as uid 101, no Node inside.
+- **Fundamentals:** a multi-stage build keeps tools (Node, `node_modules`, source) in the first stage and ships only the built files. Docker caches layers, so copy `package.json` and the lockfile and install first, then copy the source. `.dockerignore` keeps local files out of the build.
+- **Best practices:** pin image tags (not `latest`); `npm ci` follows the lockfile; run as a non-root user; cache hashed assets for a year and keep `index.html` uncached. Docs: https://docs.docker.com/build/building/multi-stage/ and https://docs.docker.com/build/cache/optimize/
+- **Common mistakes (all seen with `curl -I` against the running container):**
+  - `add_header Cache-Control` inside a `location` removed the four security headers set at `server` level: the JS file had none. nginx: "These directives are inherited from the previous configuration level if and only if there are no `add_header` directives defined on the current level." (https://nginx.org/en/docs/http/ngx_http_headers_module.html, checked 2026-11-09)
+  - `expires 30d;` plus `add_header Cache-Control ...` sent two `Cache-Control` headers. The nginx page says `expires` itself adds or modifies `Cache-Control`.
+  - `# syntax=docker/dockerfile:1` on line 2, after a blank line, was ignored. Docker: "all parser directives must be at the top of a Dockerfile" (https://docs.docker.com/reference/dockerfile/, checked 2026-11-09).
+  - The assignment said `docker run -p 8080:80`; `nginx-unprivileged` listens on 8080, so the mapping is `8080:8080`.
+  - README first said "Node 22 or newer" from memory; the installed packages say otherwise (`jsdom` needs `^22.22.2 || ^24.15.0 || >=26`). Read `engines` in `node_modules/<pkg>/package.json`.
+  - The tutorial's `AppCode` repo has no license (GitHub reports none) and uses Create React App, so we wrote our own app instead of copying it.
+- **Fix:** a shared `security-headers.conf` included in every location that sets its own `add_header`; `Cache-Control` set only by `add_header` (no `expires`); directive moved to line 1.
+- **Troubleshooting tip:** `docker run -d --name t -p 18080:8080 image` then `curl -sI localhost:18080/<path>` and compare headers per path; `docker exec t nginx -t` validates the config; `docker exec t id` shows the user. A test script (`npm run test:image`) checks each criterion, and a run against a deliberately broken copy proved it fails on the two bugs above.
+- **Design note:** task ids are counters because `crypto.randomUUID()` is only available in secure contexts, and the app is served over plain http [unverified: not tested in a browser; check MDN `Crypto.randomUUID`].
+- **Version note:** Vite 8 with oxlint (the current template) in place of ESLint; Vitest 5 with jsdom 31.
+- **Post angle:** "My nginx security headers vanished on the JS file: one directive-inheritance rule." Status: raw.
+
+## A10 onward (fill in as you go)
+A10 CI (GitHub Actions) / A11 manifests / A12 CI updates manifests / A13 ArgoCD / A14 GitOps loop / A15 teardown / A16 write-up. Copy the template from `README.md` for each.

@@ -1,7 +1,7 @@
 # Taskflow backlog
 
 Details for each item are in `../ASSIGNMENTS.md`.
-Last updated: 2026-11-09. Next task: A9.
+Last updated: 2026-11-09. Next task: A10 (GitHub Actions chosen; registry still to pick).
 
 ## Phase 0: Setup
 - [x] A0 Tools, AWS access, cost guard (budget alert skipped on purpose; teardown in A15 is the cost control)
@@ -17,8 +17,8 @@ Last updated: 2026-11-09. Next task: A9.
 - [x] A8 Connect with kubectl (2 nodes Ready, kube-system pods Running)
 
 ## Phase 2: Application and CI (taskflow-app)
-- [ ] A9 Container image
-- [ ] A10 CircleCI build and push
+- [x] A9 Container image (own Vite app: PR #2; image: PR #4, both in taskflow-app)
+- [ ] A10 GitHub Actions build and push
 
 ## Phase 3: GitOps (taskflow-gitops)
 - [ ] A11 Manifests
@@ -31,11 +31,12 @@ Last updated: 2026-11-09. Next task: A9.
 - [ ] A16 Docs and write-up
 
 ## Notes for the next session
-- The cluster `taskflow-dev-eks` is applied and BILLING (about $0.23 an hour: EKS, 2 NAT gateways, 2 x t3.small). Run `terraform destroy` in `taskflow-infra` when not working; the same config rebuilds in about 12 minutes.
+- Nothing is running in AWS: the cluster and network were destroyed on 2026-11-09 (state empty; the state bucket remains). Rebuild with `terraform plan -out=tfplan` then `terraform apply tfplan` (about 12 minutes, billing starts again). The cluster is next needed for A11's server-side dry run and for A13.
 - kubectl uses the default `~/.kube/config`, context `taskflow-dev`. Terminals opened before the `.zshrc` KUBECONFIG export was removed need `unset KUBECONFIG`.
 - `terraform.tfvars` (git-ignored) holds `admin_cidrs` = your home IP. If kubectl times out, your IP probably changed: update it and apply.
 - Deferred to the refactor (trivy findings): AWS-0039 KMS secrets encryption (high), AWS-0038 control plane logging, AWS-0178 VPC flow logs. AWS-0040 and AWS-0041 are accepted and documented in `eks.tf`.
-- Open decision for A10: the assignment says CircleCI, but the global rule and the infra plan lean to GitHub Actions. Decide before starting A10.
+- Decided 2026-11-09: GitHub Actions for CI (no CircleCI). Open for A10: which registry (GHCR, Docker Hub or ECR). A new GHCR package is private by default, so make it public or add an image pull secret. `GITHUB_TOKEN` cannot push to `taskflow-gitops`; A12 needs a fine-grained token stored as a secret.
+- Docs source of truth is `taskflow-infra/docs/` (in git). The older copy in `~/projects/taskflow/docs/` is stale and can be deleted.
 - Before A13/A15: ArgoCD's LoadBalancer Service creates an ELB outside Terraform. Delete the Service (or the ArgoCD app) before `terraform destroy`.
 - Optional cleanups: node group could use Spot capacity for dev; rename `nodes_assume` to `node_assume` in `iam.tf`; leftover `# Hooli-Box cluster config` comment at `~/.zshrc:278`.
 - Old broken `.git` of taskflow-infra is backed up in the Claude scratchpad (safe to ignore).

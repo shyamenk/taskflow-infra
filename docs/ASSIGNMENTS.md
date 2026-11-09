@@ -12,7 +12,7 @@ Tutorial repos to peek at when stuck (not to copy blindly): `piyushsachdeva/10we
 - AWS: use the default credentials, never pass `--profile` or set `AWS_PROFILE`. Account ID kept out of the repo (see `SECURITY.md`), region `us-east-1`.
 
 ## Security rule (applies to every assignment)
-The repos are public. Never commit secrets, `*.tfvars`, `.env`, keys, kubeconfig, state files, or other sensitive data (see `SECURITY.md` in each repo). Secrets live in CircleCI environment variables or AWS Secrets Manager. Commit `*.example` files with placeholders instead. Before every commit, read `git diff --staged`. If a secret leaks, revoke it first, then clean history.
+The repos are public. Never commit secrets, `*.tfvars`, `.env`, keys, kubeconfig, state files, or other sensitive data (see `SECURITY.md` in each repo). Secrets live in GitHub Actions secrets or AWS Secrets Manager. Commit `*.example` files with placeholders instead. Before every commit, read `git diff --staged`. If a secret leaks, revoke it first, then clean history.
 
 ## Content capture (applies to every assignment)
 After each assignment, add an entry to `content/NOTES.md` using the template in `content/README.md`: fundamentals, best practices, common mistakes with the exact error text, fix, troubleshooting tip, and a post angle. Always cite the official docs and open the page for the version actually in use (versions table in `content/README.md`). A claim without an official source is marked `[unverified]`.
@@ -97,15 +97,19 @@ Done when: 2 nodes `Ready`.
 
 ### A9. Container image (video 38:15-38:50)
 Goal: the app builds into a small Docker image locally.
-Hints: start from the tutorial's AppCode source, rename it to Taskflow. Multi-stage Dockerfile (build stage, then nginx to serve). Add `.dockerignore`.
-Read: https://docs.docker.com/build/building/multi-stage/
-Done when: `docker build` and `docker run -p 8080:80` serve the app on localhost.
+Hints: decided: a small own React + Vite app (the tutorial's AppCode has no license and uses Create React App). Multi-stage Dockerfile (build stage, then a pinned non-root nginx to serve; `nginx-unprivileged` listens on 8080). Add `.dockerignore`. Pin image tags, never `latest`.
+Read: https://docs.docker.com/build/building/multi-stage/ , https://docs.docker.com/build/cache/optimize/
+Done when: `docker build` and `docker run -p 8080:8080` serve the app on localhost. (Done 2026-11-09: app PR #2, image PR #4 in `taskflow-app`; `npm run test:image` checks it.)
 
-### A10. CircleCI build and push (video 19:10-23:10, 30:00-39:40)
-Goal: every push to `main` builds and pushes `<user>/taskflow-app:<build number>`.
-Hints: config path `.circleci/config.yml`, and it must begin with `version: 2.1` (the video hit this error). Secrets go in CircleCI project environment variables, never in the file. Pick Docker Hub as in the video, or ECR if you prefer.
-Read: https://circleci.com/docs/config-intro/
-Done when: pipeline is green and the tagged image is visible in the registry.
+### A10. GitHub Actions build and push (video 19:10-23:10, 30:00-39:40; the video uses CircleCI, decided 2026-11-09 to use GitHub Actions)
+Goal: every push to `main` runs the checks, builds the image and pushes `<registry>/taskflow-app:<tag>`.
+Hints:
+- Workflow file `.github/workflows/ci.yml` with two jobs: `test` (`npm ci`, `npm run lint`, `format:check`, `npm test`, `npm run build`, `npm run test:image`) and `publish` (`needs: test`, only on pushes to `main`).
+- Pick a registry and write down why. GHCR (`ghcr.io`) needs no stored secret: it uses `GITHUB_TOKEN` with `packages: write`. A newly published package is private by default, so make it public or the cluster will need an image pull secret. Docker Hub needs a token in Actions secrets. ECR matches the node role's ECR policy but needs Terraform for the repository and an OIDC role.
+- Tag with the short commit SHA (immutable and traceable) or the run number. Never `latest`.
+- Give each job the minimum `permissions:` and pin third-party actions to a version.
+Read: https://docs.github.com/en/actions/reference/workflows-and-actions/workflow-syntax , https://docs.github.com/en/actions/use-cases-and-examples/publishing-packages/publishing-docker-images , https://docs.github.com/en/packages/working-with-a-github-packages-registry/working-with-the-container-registry , https://github.com/docker/build-push-action
+Done when: the workflow is green on `main` and the tagged image is visible in the registry (and pullable without credentials if the package is public).
 
 ---
 
@@ -118,9 +122,9 @@ Read: https://kubernetes.io/docs/concepts/workloads/controllers/deployment/
 Done when: `kubectl apply --dry-run=server -f manifest/` passes.
 
 ### A12. CI updates the manifest repo (video 22:00-23:10, 50:50-53:20)
-Goal: a second CircleCI job rewrites the image tag in `taskflow-gitops` and pushes.
-Hints: job depends on the build job (`requires`). Use a fine-grained GitHub token limited to the `taskflow-gitops` repo with contents read/write (the video's token lacked this and failed). Never force-push.
-Read: https://circleci.com/docs/workflows/
+Goal: a second GitHub Actions job rewrites the image tag in `taskflow-gitops` and pushes.
+Hints: the job uses `needs: publish`. The built-in `GITHUB_TOKEN` is limited to the repository that holds the workflow, so it cannot push to `taskflow-gitops`. Use a fine-grained personal access token limited to that one repository with contents read/write (the video's token lacked this and failed), stored as an Actions secret in `taskflow-app`. Never force-push.
+Read: https://docs.github.com/en/actions/concepts/security/github_token , https://docs.github.com/en/actions/reference/workflows-and-actions/workflow-syntax
 Done when: after a push to `taskflow-app`, a new commit with the new tag appears in `taskflow-gitops`.
 
 ### A13. ArgoCD (video 39:50-46:00)
