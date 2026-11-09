@@ -17,6 +17,9 @@ Copy `terraform.tfvars.example` to `terraform.tfvars` (git-ignored) and set:
 | Variable | Meaning |
 |----------|---------|
 | `admin_cidrs` | CIDRs allowed to reach the public EKS API endpoint, for example your own IP as `x.x.x.x/32`. `0.0.0.0/0` is rejected. If `kubectl` starts timing out, your IP probably changed: update this and apply. |
+| `instance_type` | Node size, default `t3.small` (one of `t3.small`, `t3.medium`, `t3.large`). A `t3.small` fits about 11 pods; switch to `t3.medium` if pods stay `Pending`. |
+| `ami_type` | Node AMI, default `AL2023_x86_64_STANDARD`. x86 on purpose; ARM nodes would need arm64 images. |
+| `min_size`, `desired_size`, `max_size` | Node counts, all default `2` (one per availability zone). `desired_size` must sit between min and max. |
 
 ## State bootstrap (one time, by CLI)
 
@@ -41,3 +44,11 @@ terraform fmt -check -recursive
 terraform validate
 tflint --recursive
 ```
+
+## Security scan
+
+```sh
+trivy config .
+```
+
+Two critical findings are accepted on purpose and documented next to the code in `eks.tf` (`#trivy:ignore`): the public API endpoint (AWS-0040) and the CIDR list that trivy cannot resolve from a variable (AWS-0041). Known open items for the refactor: control plane logging (AWS-0038), KMS secrets encryption (AWS-0039) and VPC flow logs (AWS-0178).
