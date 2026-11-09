@@ -38,3 +38,18 @@ variable "owner" {
   description = "Name of the owner"
   default     = "shyamenk"
 }
+
+variable "admin_cidrs" {
+  type        = list(string)
+  description = "CIDRs allowed to reach the public EKS API endpoint. Set in terraform.tfvars, never commit."
+
+  validation {
+    condition     = length(var.admin_cidrs) > 0 && alltrue([for c in var.admin_cidrs : can(cidrhost(c, 0))])
+    error_message = "admin_cidrs must be a non-empty list of valid CIDRs, for example [\"203.0.113.10/32\"]."
+  }
+
+  validation {
+    condition     = !contains(var.admin_cidrs, "0.0.0.0/0")
+    error_message = "admin_cidrs must not contain 0.0.0.0/0; that opens the Kubernetes API to the internet."
+  }
+}

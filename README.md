@@ -10,6 +10,14 @@ Part of a three-repo GitOps pipeline:
 
 Naming: every resource is prefixed `taskflow-dev` and tagged `Project=taskflow`, `Environment=dev`, `ManagedBy=terraform`.
 
+## Configuration
+
+Copy `terraform.tfvars.example` to `terraform.tfvars` (git-ignored) and set:
+
+| Variable | Meaning |
+|----------|---------|
+| `admin_cidrs` | CIDRs allowed to reach the public EKS API endpoint, for example your own IP as `x.x.x.x/32`. `0.0.0.0/0` is rejected. If `kubectl` starts timing out, your IP probably changed: update this and apply. |
+
 ## State bootstrap (one time, by CLI)
 
 Terraform cannot create the bucket that stores its own state, so the bucket was created by hand with default AWS credentials. To recreate it in another account, replace `<account-id>`:
